@@ -3,23 +3,13 @@ import {
   Card,
   CardContent,
   CardDescription,
+  CardFooter,
   CardHeader,
   CardTitle,
 } from "../../components/ui/card";
-import { Button } from "../../components/ui/button";
 import { Input } from "../../components/ui/input";
 import { Label } from "../../components/ui/label";
-import {
-  TrendingUp,
-  TrendingDown,
-  DollarSign,
-  Clock,
-  Shield,
-  BarChart3,
-  Activity,
-  Target,
-  SliderHorizontal,
-} from "lucide-react";
+import { Shield, BarChart3, Activity, Target } from "lucide-react";
 
 interface ClickDataPoint {
   day: string;
@@ -32,6 +22,8 @@ interface Projection {
   label: string;
   xlm: number;
   usd: number;
+  weeklyXlm: number;
+  weeklyUsd: number;
   color: string;
 }
 
@@ -92,31 +84,44 @@ export const ProjectedEarningsForecast = () => {
     return projectedDailyXlm * 30;
   }, [projectedDailyXlm]);
 
+  const projectedWeeklyXlm = useMemo(() => {
+    return projectedDailyXlm * 7;
+  }, [projectedDailyXlm]);
+
   const projections = useMemo<Projection[]>(() => {
     const low = projectedMonthlyXlm * 0.75;
     const avg = projectedMonthlyXlm;
     const high = projectedMonthlyXlm * 1.25;
+    const weeklyLow = projectedWeeklyXlm * 0.75;
+    const weeklyAvg = projectedWeeklyXlm;
+    const weeklyHigh = projectedWeeklyXlm * 1.25;
     return [
       {
         label: "Low",
         xlm: low,
         usd: low * usdXlmRate,
+        weeklyXlm: weeklyLow,
+        weeklyUsd: weeklyLow * usdXlmRate,
         color: "text-amber-500",
       },
       {
         label: "Average",
         xlm: avg,
         usd: avg * usdXlmRate,
+        weeklyXlm: weeklyAvg,
+        weeklyUsd: weeklyAvg * usdXlmRate,
         color: "text-indigo-600",
       },
       {
         label: "High",
         xlm: high,
         usd: high * usdXlmRate,
+        weeklyXlm: weeklyHigh,
+        weeklyUsd: weeklyHigh * usdXlmRate,
         color: "text-emerald-500",
       },
     ];
-  }, [projectedMonthlyXlm, usdXlmRate]);
+  }, [projectedMonthlyXlm, projectedWeeklyXlm, usdXlmRate]);
 
   const accuracyScore = useMemo(() => {
     const variance = historicalData.reduce(
@@ -141,6 +146,10 @@ export const ProjectedEarningsForecast = () => {
     }
     return daily;
   }, [projectedDailyXlm]);
+
+  const maxDailyHigh = useMemo(() => {
+    return Math.max(...forecastDaily.map((p) => p.high), 1);
+  }, [forecastDaily]);
 
   return (
     <div className="space-y-8">
@@ -197,6 +206,26 @@ export const ProjectedEarningsForecast = () => {
                         maximumFractionDigits: 2,
                       })}
                     </p>
+                    <div className="mt-3 pt-2 border-t border-slate-200 dark:border-zinc-800">
+                      <p className="text-[10px] font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 mb-1">
+                        Weekly
+                      </p>
+                      <div className="flex items-baseline gap-1">
+                        <span className="text-xl font-bold text-zinc-900 dark:text-white">
+                          {proj.weeklyXlm.toLocaleString(undefined, {
+                            minimumFractionDigits: 2,
+                            maximumFractionDigits: 2,
+                          })}
+                        </span>
+                        <span className="text-sm font-medium {proj.color}">XLM</span>
+                      </div>
+                      <p className="text-[10px] text-zinc-400 dark:text-zinc-500 mt-0.5">
+                        ≈ ${proj.weeklyUsd.toLocaleString(undefined, {
+                          minimumFractionDigits: 2,
+                          maximumFractionDigits: 2,
+                        })}
+                      </p>
+                    </div>
                   </div>
                   <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-slate-100 dark:bg-zinc-800/50">
                     <Shield className="w-5 h-5 text-zinc-500 dark:text-zinc-400" />
@@ -268,6 +297,7 @@ export const ProjectedEarningsForecast = () => {
               step="0.1"
               value={trafficMultiplier}
               onChange={(e) => setTrafficMultiplier(parseFloat(e.target.value))}
+              aria-label="Traffic volume simulator slider"
               className="w-full h-2 bg-slate-200 dark:bg-zinc-800 rounded-lg appearance-none cursor-pointer accent-indigo-600"
             />
           </div>
@@ -285,7 +315,7 @@ export const ProjectedEarningsForecast = () => {
                     <div
                       className="w-full bg-indigo-200 dark:bg-indigo-500/20 rounded-t-lg transition-all duration-300 hover:bg-indigo-300 dark:hover:bg-indigo-500/40"
                       style={{
-                        height: `${Math.max(20, (point.high / projections[2].xlm) * 100)}%`,
+                        height: `${Math.max(20, (point.high / maxDailyHigh) * 100)}%`,
                       }}
                     />
                     <div className="absolute bottom-0 left-0 w-full bg-gradient-to-t from-indigo-600/20 to-transparent rounded-t-lg h-4" />

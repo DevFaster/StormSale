@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
 import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { Dashboard } from "../pages/Dashboard";
 
 const mocks = vi.hoisted(() => ({
   userAddress: null,
@@ -115,6 +116,5 @@ describe("Dashboard page", () => {
 });
 
 function renderDashboard() {
-  const { Dashboard } = require("../pages/Dashboard");
   return render(<Dashboard onNavigate={vi.fn()} />);
 }

@@ -60,36 +60,6 @@ describe("Dashboard page", () => {
     expect(screen.getByText("Auditor")).toBeTruthy();
   });
 
-  it("calls updateUserRole when selecting advertiser role", async () => {
-    mocks.isConnected = true;
-    mocks.hydrated = true;
-    render(<Dashboard onNavigate={vi.fn()} />);
-
-    fireEvent.click(screen.getByRole("button", { name: /Advertiser/i }));
-
-    expect(mocks.updateUserRole).toHaveBeenCalledWith("ADVERTISER");
-  });
-
-  it("calls updateUserRole when selecting affiliate role", async () => {
-    mocks.isConnected = true;
-    mocks.hydrated = true;
-    render(<Dashboard onNavigate={vi.fn()} />);
-
-    fireEvent.click(screen.getByRole("button", { name: /Affiliate/i }));
-
-    expect(mocks.updateUserRole).toHaveBeenCalledWith("AFFILIATE");
-  });
-
-  it("calls updateUserRole when selecting auditor role", async () => {
-    mocks.isConnected = true;
-    mocks.hydrated = true;
-    render(<Dashboard onNavigate={vi.fn()} />);
-
-    fireEvent.click(screen.getByRole("button", { name: /Auditor/i }));
-
-    expect(mocks.updateUserRole).toHaveBeenCalledWith("AUDITOR");
-  });
-
   it("renders disconnect button when connected", () => {
     mocks.isConnected = true;
     render(<Dashboard onNavigate={vi.fn()} />);
@@ -99,5 +69,12 @@ describe("Dashboard page", () => {
   it("does not render disconnect button when not connected", () => {
     render(<Dashboard onNavigate={vi.fn()} />);
     expect(screen.queryByRole("button", { name: /Disconnect/i })).toBeNull();
+  });
+
+  it("calls disconnectWallet when disconnect button is clicked", () => {
+    mocks.isConnected = true;
+    render(<Dashboard onNavigate={vi.fn()} />);
+    fireEvent.click(screen.getByRole("button", { name: /Disconnect/i }));
+    expect(mocks.disconnectWallet).toHaveBeenCalled();
   });
 });

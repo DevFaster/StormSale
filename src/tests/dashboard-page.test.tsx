@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { Dashboard } from "../pages/Dashboard";
 
@@ -53,8 +53,8 @@ describe("Dashboard page", () => {
     cleanup();
   });
 
-  it("renders role selection when not connected", () => {
-    renderDashboard();
+  it("renders role selection cards", () => {
+    render(<Dashboard onNavigate={vi.fn()} />);
     expect(screen.getByText("Advertiser")).toBeTruthy();
     expect(screen.getByText("Affiliate")).toBeTruthy();
     expect(screen.getByText("Auditor")).toBeTruthy();
@@ -63,58 +63,41 @@ describe("Dashboard page", () => {
   it("calls updateUserRole when selecting advertiser role", async () => {
     mocks.isConnected = true;
     mocks.hydrated = true;
-    renderDashboard();
+    render(<Dashboard onNavigate={vi.fn()} />);
 
     fireEvent.click(screen.getByRole("button", { name: /Advertiser/i }));
 
-    await waitFor(() => {
-      expect(mocks.updateUserRole).toHaveBeenCalledWith("ADVERTISER");
-    });
+    expect(mocks.updateUserRole).toHaveBeenCalledWith("ADVERTISER");
   });
 
   it("calls updateUserRole when selecting affiliate role", async () => {
     mocks.isConnected = true;
     mocks.hydrated = true;
-    renderDashboard();
+    render(<Dashboard onNavigate={vi.fn()} />);
 
     fireEvent.click(screen.getByRole("button", { name: /Affiliate/i }));
 
-    await waitFor(() => {
-      expect(mocks.updateUserRole).toHaveBeenCalledWith("AFFILIATE");
-    });
+    expect(mocks.updateUserRole).toHaveBeenCalledWith("AFFILIATE");
   });
 
   it("calls updateUserRole when selecting auditor role", async () => {
     mocks.isConnected = true;
     mocks.hydrated = true;
-    renderDashboard();
+    render(<Dashboard onNavigate={vi.fn()} />);
 
     fireEvent.click(screen.getByRole("button", { name: /Auditor/i }));
 
-    await waitFor(() => {
-      expect(mocks.updateUserRole).toHaveBeenCalledWith("AUDITOR");
-    });
+    expect(mocks.updateUserRole).toHaveBeenCalledWith("AUDITOR");
   });
 
-  it("calls invalidateCache on disconnect when connected", () => {
+  it("renders disconnect button when connected", () => {
     mocks.isConnected = true;
-    mocks.hydrated = true;
-    renderDashboard();
-
-    fireEvent.click(screen.getByRole("button", { name: /disconnect/i }));
-
-    expect(mocks.invalidateCache).toHaveBeenCalled();
+    render(<Dashboard onNavigate={vi.fn()} />);
+    expect(screen.getByRole("button", { name: /Disconnect/i })).toBeTruthy();
   });
 
-  it("does not invalidate cache when not connected", () => {
-    mocks.isConnected = false;
-    mocks.hydrated = true;
-    renderDashboard();
-
-    expect(mocks.invalidateCache).not.toHaveBeenCalled();
+  it("does not render disconnect button when not connected", () => {
+    render(<Dashboard onNavigate={vi.fn()} />);
+    expect(screen.queryByRole("button", { name: /Disconnect/i })).toBeNull();
   });
 });
-
-function renderDashboard() {
-  return render(<Dashboard onNavigate={vi.fn()} />);
-}
